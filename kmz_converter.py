@@ -1,13 +1,18 @@
 import sys
 import os
-import ogr
-import osr
-import gdalconst
+try:
+    import ogr
+    import osr
+    import gdalconst
+except:
+    from osgeo import ogr
+    from osgeo import osr
+    from osgeo import gdalconst
 import code
 
 def kmz_converter():
     kmz_file = 'Alpheus.kmz'
-    kmz_file = 'doc.kml'
+    # kmz_file = 'doc.kml'
 
     data_source = open_kmz(kmz_file)
 
@@ -122,7 +127,7 @@ def kmz_converter():
 
 def open_kmz(kmz_file):
     # driver = ogr.GetDriverByName('LIBKML')
-    driver = ogr.GetDriverByName('KML')
+    driver = ogr.GetDriverByName('LIBKML')
     data_source = driver.Open(kmz_file, gdalconst.GA_ReadOnly)
 
     if data_source is None:

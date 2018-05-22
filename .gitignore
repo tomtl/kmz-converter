@@ -1,2 +1,6 @@
-Alpheus.kmz
-Alpheus.zip
+*.zip
+*.kmz
+*.shp
+*.dbf
+*.prj
+*.shx
