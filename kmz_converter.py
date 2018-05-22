@@ -9,22 +9,26 @@ except:
     from osgeo import osr
     from osgeo import gdalconst
 import code
+# code.interact(local=locals())
 
 def kmz_converter():
-    kmz_file = 'Alpheus.kmz'
-    # kmz_file = 'doc.kml'
+    kmz_file = str(sys.argv[1])
 
     data_source = open_kmz(kmz_file)
 
-    points_datastore = create_output_datastore('Alpheus_points.shp')
+    points_shp_name = set_output_filename(kmz_file, 'points')
+    lines_shp_name = set_output_filename(kmz_file, 'lines')
+    polygons_shp_name = set_output_filename(kmz_file, 'polygons')
+
+    points_datastore = create_output_datastore(points_shp_name)
     points_layer = create_output_layer(points_datastore, ogr.wkbMultiPoint)
     add_fields(points_layer)
 
-    lines_datastore = create_output_datastore('Alpheus_lines.shp')
+    lines_datastore = create_output_datastore(lines_shp_name)
     lines_layer = create_output_layer(lines_datastore, ogr.wkbMultiLineString)
     add_fields(lines_layer)
 
-    polygons_datastore = create_output_datastore('Alpheus_polygons.shp')
+    polygons_datastore = create_output_datastore(polygons_shp_name)
     polygons_layer = create_output_layer(polygons_datastore, ogr.wkbMultiPolygon)
     add_fields(polygons_layer)
 
@@ -42,8 +46,6 @@ def kmz_converter():
             geom = feature.GetGeometryRef()
             geom_type = geom.GetGeometryName()
             field_names = ['Name', 'descriptio', 'icon', 'snippet']
-
-            # code.interact(local=locals())
 
             if geom_type in ('POINT', 'MULTIPOINT'):
                 pts_layer_defn = points_layer.GetLayerDefn()
@@ -93,7 +95,6 @@ def kmz_converter():
                 polygons_layer.CreateFeature(out_feature)
                 out_feature = None
 
-
         layer.ResetReading()
 
         print layer_info['name'] , counter
@@ -104,26 +105,6 @@ def kmz_converter():
     lines_layer = None
     polygons_datastore = None
     polygons_layer = None
-
-# >>> layer_def = layer.GetLayerDefn()
-# >>> field_count = layer_def.GetFieldCount()
-# >>> layer_def.GetFieldDefn(1).GetNameRef()
-# 'description'
-# >>> for i in range (0, field_count):
-# ...   print layer_def.GetFieldDefn(i).GetNameRef()
-# ...
-# Name
-# description
-# timestamp
-# begin
-# end
-# altitudeMode
-# tessellate
-# extrude
-# visibility
-# drawOrder
-# icon
-
 
 def open_kmz(kmz_file):
     # driver = ogr.GetDriverByName('LIBKML')
@@ -136,10 +117,15 @@ def open_kmz(kmz_file):
 
     return data_source
 
+def set_output_filename(input_filename, geom_type):
+    # set the output filename by appending the geometry type to input filename
+    dir, filename = os.path.split(input_filename)
+    output_filename = os.path.splitext(filename)[0] + '_' + geom_type + '.shp'
+    output_shapefile = os.path.join(dir, output_filename)
+    return output_shapefile
+
 def create_output_datastore(shp_name):
-    # points shapefile
     driver = ogr.GetDriverByName('ESRI Shapefile')
-    # points_shp_name = 'alpheus_points.shp'
 
     # remove the shapefile if it already exists
     if os.path.exists(shp_name):
