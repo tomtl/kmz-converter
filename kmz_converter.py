@@ -12,10 +12,11 @@ import code
 # code.interact(local=locals())
 
 def kmz_converter():
+    # open the input KMZ file
     kmz_file = str(sys.argv[1])
-
     data_source = open_kmz(kmz_file)
 
+    # create the output shapefiles
     points_shp_name = set_output_filename(kmz_file, 'points')
     lines_shp_name = set_output_filename(kmz_file, 'lines')
     polygons_shp_name = set_output_filename(kmz_file, 'polygons')
@@ -32,7 +33,7 @@ def kmz_converter():
     polygons_layer = create_output_layer(polygons_datastore, ogr.wkbMultiPolygon)
     add_fields(polygons_layer)
 
-    # iterate through the layers
+    # loop through the layers
     counter = 0
     layer_count = data_source.GetLayerCount()
     for i in range(0, layer_count):
@@ -41,6 +42,7 @@ def kmz_converter():
         layer_info['feature_count'] = layer.GetFeatureCount()
         layer_info['name'] = layer.GetName()
 
+        # loop through the features in each layer
         for feature in layer:
             counter += 1
             geom = feature.GetGeometryRef()
@@ -48,53 +50,47 @@ def kmz_converter():
             field_names = ['Name', 'descriptio', 'icon', 'snippet']
 
             if geom_type in ('POINT', 'MULTIPOINT'):
-                pts_layer_defn = points_layer.GetLayerDefn()
-                out_feature = ogr.Feature(pts_layer_defn)
+                layer_defn = points_layer.GetLayerDefn()
+                out_feature = ogr.Feature(layer_defn)
                 out_geom = ogr.ForceToMultiPoint(geom)
-                out_feature.SetGeometry(geom)
 
-                for field_name in field_names:
-                    out_feature.SetField(field_name, feature.GetField(field_name))
-
-                out_feature.SetField('layer_name', layer.GetName())
-                out_feature.SetField('id', counter)
-
-                points_layer.CreateFeature(out_feature)
-                out_feature = None
-
-            if geom_type in ('LINESTRING', 'MULTILINESTRING'):
-                lines_layer_defn = lines_layer.GetLayerDefn()
-                out_feature = ogr.Feature(lines_layer_defn)
+            elif geom_type in ('LINESTRING', 'MULTILINESTRING'):
+                layer_defn = lines_layer.GetLayerDefn()
+                out_feature = ogr.Feature(layer_defn)
                 out_geom = ogr.ForceToMultiLineString(geom)
-                out_feature.SetGeometry(out_geom)
 
-                for field_name in field_names:
-                    try:
-                        out_feature.SetField(field_name, feature.GetField(field_name))
-                    except:
-                        pass
-
-                out_feature.SetField('layer_name', layer.GetName())
-                out_feature.SetField('id', counter)
-
-                lines_layer.CreateFeature(out_feature)
-                out_feature = None
-
-            if geom_type in ('POLYGON', 'MULTIPOLYGON'):
-                polygons_layer_defn = lines_layer.GetLayerDefn()
-                out_feature = ogr.Feature(polygons_layer_defn)
+            elif geom_type in ('POLYGON', 'MULTIPOLYGON'):
+                layer_defn = lines_layer.GetLayerDefn()
+                out_feature = ogr.Feature(layer_defn)
                 out_geom = ogr.ForceToMultiPolygon(geom)
-                out_feature.SetGeometry(geom)
 
-                for field_name in field_names:
+            else: continue
+
+            # set the output feature geometry
+            out_feature.SetGeometry(out_geom)
+
+            # set the output feature attributes
+            for field_name in field_names:
+                try:
                     out_feature.SetField(field_name, feature.GetField(field_name))
+                except:
+                    pass
 
-                out_feature.SetField('layer_name', layer.GetName())
-                out_feature.SetField('id', counter)
+            out_feature.SetField('layer_name', layer.GetName())
+            out_feature.SetField('id', counter)
 
+            # write the output feature to shapefile
+            if geom_type in ('POINT', 'MULTIPOINT'):
+                points_layer.CreateFeature(out_feature)
+            elif geom_type in ('LINESTRING', 'MULTILINESTRING'):
+                lines_layer.CreateFeature(out_feature)
+            elif geom_type in ('POLYGON', 'MULTIPOLYGON'):
                 polygons_layer.CreateFeature(out_feature)
-                out_feature = None
 
+            # clear the output feature variable
+            out_feature = None
+
+        # reset the layer reading in case it needs to be re-read later
         layer.ResetReading()
 
         print layer_info['name'] , counter
@@ -107,7 +103,6 @@ def kmz_converter():
     polygons_layer = None
 
 def open_kmz(kmz_file):
-    # driver = ogr.GetDriverByName('LIBKML')
     driver = ogr.GetDriverByName('LIBKML')
     data_source = driver.Open(kmz_file, gdalconst.GA_ReadOnly)
 
@@ -132,6 +127,7 @@ def create_output_datastore(shp_name):
         print "Removing previous version of %s" % shp_name
         os.remove(shp_name)
 
+    # create the shapefile
     try:
         output_datastore = driver.CreateDataSource(shp_name)
     except:
@@ -154,6 +150,7 @@ def create_output_layer(datastore, geom_type):
     return new_pts_layer
 
 def add_fields(layer):
+    # add standard KMZ fields to an existing layer 
     fields = {
     'Name': 50,
     'description': 128,
