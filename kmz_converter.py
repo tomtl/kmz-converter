@@ -66,6 +66,9 @@ def kmz_converter():
 
             else: continue
 
+            # convert to 2D
+            out_geom.FlattenTo2D()
+
             # set the output feature geometry
             out_feature.SetGeometry(out_geom)
 
@@ -150,7 +153,7 @@ def create_output_layer(datastore, geom_type):
     return new_pts_layer
 
 def add_fields(layer):
-    # add standard KMZ fields to an existing layer 
+    # add standard KMZ fields to an existing layer
     fields = {
     'Name': 50,
     'description': 128,
