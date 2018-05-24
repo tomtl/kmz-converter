@@ -34,7 +34,11 @@ def kmz_converter():
     add_fields(polygons_layer)
 
     # loop through the layers
-    counter = 0
+    feature_counter = 0
+    points_counter = 0
+    lines_counter = 0
+    polygons_counter = 0
+
     layer_count = data_source.GetLayerCount()
     for i in range(0, layer_count):
         layer = data_source.GetLayer(i)
@@ -44,22 +48,25 @@ def kmz_converter():
 
         # loop through the features in each layer
         for feature in layer:
-            counter += 1
+            feature_counter += 1
             geom = feature.GetGeometryRef()
             geom_type = geom.GetGeometryName()
             field_names = ['Name', 'descriptio', 'icon', 'snippet']
 
             if geom_type in ('POINT', 'MULTIPOINT'):
+                points_counter += 1
                 layer_defn = points_layer.GetLayerDefn()
                 out_feature = ogr.Feature(layer_defn)
                 out_geom = ogr.ForceToMultiPoint(geom)
 
             elif geom_type in ('LINESTRING', 'MULTILINESTRING'):
+                lines_counter += 1
                 layer_defn = lines_layer.GetLayerDefn()
                 out_feature = ogr.Feature(layer_defn)
                 out_geom = ogr.ForceToMultiLineString(geom)
 
             elif geom_type in ('POLYGON', 'MULTIPOLYGON'):
+                polygons_counter += 1
                 layer_defn = lines_layer.GetLayerDefn()
                 out_feature = ogr.Feature(layer_defn)
                 out_geom = ogr.ForceToMultiPolygon(geom)
@@ -80,7 +87,7 @@ def kmz_converter():
                     pass
 
             out_feature.SetField('layer_name', layer.GetName())
-            out_feature.SetField('id', counter)
+            out_feature.SetField('id', feature_counter)
 
             # write the output feature to shapefile
             if geom_type in ('POINT', 'MULTIPOINT'):
@@ -96,14 +103,31 @@ def kmz_converter():
         # reset the layer reading in case it needs to be re-read later
         layer.ResetReading()
 
-        print layer_info['name'] , counter
+        print layer_info['name'] , feature_counter
 
+    # print counts
+    print '\nSUMMARY COUNTS'
+    print "Feature count: %s" % feature_counter
+    print "Points count: %s" % points_counter
+    print "Lines count: %s" % lines_counter
+    print "Polygons count: %s" % polygons_counter
+
+    # cleanup
     points_datastore = None
     points_layer = None
     lines_datastore = None
     lines_layer = None
     polygons_datastore = None
     polygons_layer = None
+
+    # remove empty output shapefiles
+    driver = ogr.GetDriverByName('ESRI Shapefile')
+    if points_counter == 0:
+        driver.DeleteDataSource(points_shp_name)
+    if lines_counter == 0:
+        driver.DeleteDataSource(lines_shp_name)
+    if polygons_counter == 0:
+        driver.DeleteDataSource(polygons_shp_name)
 
 def open_kmz(kmz_file):
     driver = ogr.GetDriverByName('LIBKML')
