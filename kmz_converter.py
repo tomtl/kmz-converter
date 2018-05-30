@@ -67,7 +67,7 @@ def kmz_converter():
 
             elif geom_type in ('POLYGON', 'MULTIPOLYGON'):
                 polygons_counter += 1
-                layer_defn = lines_layer.GetLayerDefn()
+                layer_defn = polygons_layer.GetLayerDefn()
                 out_feature = ogr.Feature(layer_defn)
                 out_geom = ogr.ForceToMultiPolygon(geom)
 
