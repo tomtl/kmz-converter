@@ -19,3 +19,8 @@ Want to run it on multiple KMZs in the same folder? Try a commandline loop like 
 
 Then merge them together in QGIS and QGIS will add a column for filename automatically
 (Vector > Data management tools > Merge vector layers).
+
+## Troubleshooting
+### Windows
+*Unable to open EPSG support file gcs.csv. Try setting the GDAL_DATA environmental variable to point to the directory containing EPSG csv files.*
+Create an environmental variable named GDAL_DATA and set `C:\Program Files (x86)\GDAL\gdal-data` as the value.
