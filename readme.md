@@ -20,7 +20,7 @@ Then merge them together in QGIS and QGIS will add a column for filename automat
 (Vector > Data management tools > Merge vector layers).
 
 ## Troubleshooting
-Most errors are going to be the result of an issue with the GDAL or OGR installation.
+Most errors are an issue with the GDAL or OGR installation.
 
 #### Windows
 *ERROR 4: Unable to open EPSG support file gcs.csv. Try setting the GDAL_DATA environmental variable to point to the directory containing EPSG csv files.*  
