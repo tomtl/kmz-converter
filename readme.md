@@ -2,8 +2,7 @@
 
 Converts KML and KMZ files to shapefile. Combines multiple layers into one shapefile with columns including feature name, description, and layer name.
 
-Run it like this:
-
+Run it like this:  
 `kmz_converter.py filename.kmz`
 
 This works if both the KMZ and the kmz_converter.py files are in the current folder.
@@ -21,6 +20,8 @@ Then merge them together in QGIS and QGIS will add a column for filename automat
 (Vector > Data management tools > Merge vector layers).
 
 ## Troubleshooting
-### Windows
-*Unable to open EPSG support file gcs.csv. Try setting the GDAL_DATA environmental variable to point to the directory containing EPSG csv files.*
-Create an environmental variable named GDAL_DATA and set `C:\Program Files (x86)\GDAL\gdal-data` as the value.
+Most errors are going to be the result of an issue with the GDAL or OGR installation.
+
+#### Windows
+*ERROR 4: Unable to open EPSG support file gcs.csv. Try setting the GDAL_DATA environmental variable to point to the directory containing EPSG csv files.*  
+Create an environmental variable named `GDAL_DATA` and set `C:\Program Files (x86)\GDAL\gdal-data` as the value.
